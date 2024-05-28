@@ -1,0 +1,84 @@
+name Node
+
+[System.Serializable]
+public vector2Int coordinates;
+public bool isWalkable;
+public bool isExplored;
+public bool isPath;
+public Node connectedTo;
+
+pubilc Node(Vector2Int coordinates, bool isWalkable)
+{
+	this.coordinates = coordinates;
+	this.isWalkable = isWalkable;
+}
+
+name GridManager
+[SerializeField] Vector2Int gridSize;
+Dictionary<Vector2Int, Node> grid = new Dictionary<Vector2Int, Node>();
+public Dictionary<Vector2Int, Node> Grid { get { return grid; }}
+
+void Awake()
+{
+	CreateGrid();
+}
+public Node GetNode(Vector2Int coordinates)
+{
+	if(grid.ContainsKey(coordinates))
+	{
+		return grid[coordinates];
+	}
+	return null;
+}
+
+void CreateGrid()
+{
+	for(int x = 0; x< gridSize.x; x++)
+	{
+		for(int y = 0; y < gridSize.y; y++)
+		{
+			Vector2Int coordinates = new Vector2Int(x,y);
+			grid.Add(coordinates, new Node(coordinates, true));
+
+}
+}
+}
+}	
+
+name Pathfinder
+[SerializeField] Node currentSearchNode;
+Vector2Int[] directions = { Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down};
+GridManager girdmanager;
+Dictionary<Vector2Int, Node> grid;
+
+void Awake()
+{
+	gridManager = FindObjectOfType<GridManager>();
+	if(gridManager != null)
+	{
+		grid = gridManager.Grid;
+	}
+}
+
+void Start()
+{
+	ExploreNeighbors();
+}
+
+void ExploreNeighbors()
+{
+	List<Node> neighbors = new List<Node>();
+	
+	foreach(Vector2Int direction in directions)
+	{
+		Vector2Int neighborCoords = currentSearchNode.coordinates + direction;
+
+		if(grid.ContainsKey(neighborCoodrs))
+		{
+			neighbors.Add(grid[neighborCoords]);
+
+			grid[neighborCoords].isExplored = true;
+			grid[currentSearchNode.coordinates].isPath = true;
+		}
+	}
+}

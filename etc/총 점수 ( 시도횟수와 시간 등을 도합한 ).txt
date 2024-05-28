@@ -1,0 +1,117 @@
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance;
+
+    public AudioClip Alert;
+
+    public Text timeTxt;    
+    public Text tryTxt; 
+    public Text point;              // 점수 텍스트 (UI)
+
+    public GameObject endTitle;     // 점수판 (오브젝트)
+
+    AudioSource audioSource;
+
+    public AudioClip clip;
+
+    public Card firstCard;
+    public Card sceondCard;
+
+    private bool soundPlayed = false;
+
+    public int endCount= 16;
+
+    
+
+    float time = 0.0f;
+    int tryCount = 0;       // 시도 횟수
+    
+    int matchPoint = 0;     // 점수 증감
+    int totalPoint = 0;     // 총 점수
+
+    
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+    }
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+        Time.timeScale = 1.0f;
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (time < 30)
+        {
+            time += Time.deltaTime;
+            timeTxt.text = time.ToString("N2");
+            if(time >=20f&&!soundPlayed)
+            {
+                timeTxt.color = Color.red;
+                audioSource.PlayOneShot(Alert);
+                soundPlayed = true;
+            }
+        }
+        else
+            EndGame();
+    }
+    
+
+    public void Matched()
+    {
+        
+        if(firstCard.idx == sceondCard.idx)
+        {
+            audioSource.PlayOneShot(clip);
+
+            firstCard.InvokeCardDestroy();
+            sceondCard.InvokeCardDestroy();
+            
+
+            matchPoint +=10;     // 맞힌 점수
+            
+
+            endCount -= 2;
+            if(endCount == 0 )
+            {
+                Invoke("EndGame", 1f);
+                totalPoint = matchPoint - (int)time;    // 총 점수 = 증감점수 - time , 따로 시간당 몇점 빼기 할려니까 
+                                                        // 점수가 -로 치솟음 더하기로 하기엔 시간이 증가형태라 아에 바꿔야해서
+                point.text = totalPoint.ToString();     // 점수 텍스트
+            }
+        }
+        else
+        {
+            firstCard.InvokeCardClose();
+            sceondCard.InvokeCardClose();
+            matchPoint--;       // 틀린 점수
+        }
+        
+        // 시도횟수 (증가)
+
+        tryCount++;
+        tryTxt.text = tryCount.ToString();        
+    }
+
+    
+    public void EndGame()
+    {
+        endTitle.gameObject.SetActive(true);
+       
+        Time.timeScale = 0.0f;
+    }
+}

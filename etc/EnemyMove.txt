@@ -1,0 +1,69 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(Enemy))]
+public class EnemyMove : MonoBehaviour
+{
+    
+    [SerializeField] [Range(0f, 5f)] float speed = 1f;
+    List<Node> path = new List<Node>(); // 적군 경로
+    Enemy enemy;
+    GridManager gridManager;
+    Pathfinder pathfinder;
+    void OnEnable()
+    {
+        FindPath();
+        ReturnToStart();
+        
+        StartCoroutine(FollowPath());
+    }
+
+     void Awake()
+    {
+        enemy = GetComponent<Enemy>();
+        gridManager = FindObjectOfType<GridManager>();
+        pathfinder = FindObjectOfType<Pathfinder>();
+    }
+    
+    void FindPath()
+    {
+        path.Clear();
+
+        path = pathfinder.GetNewPath();
+    }
+    void ReturnToStart()
+    {
+        transform.position = gridManager.GetPositionFromCoordinates(pathfinder.StartCoordinates);
+    }
+    void FinishPath()
+    {
+        enemy.StealMoney();
+        gameObject.SetActive(false);
+    }
+    IEnumerator FollowPath()
+    {
+        for(int i = 0; i < path.Count; i++)
+        {
+            Vector3 startPosition = transform.position;
+            Vector3 endPosition = gridManager.GetPositionFromCoordinates(path[i].coordinates);
+            float travelPercent = 0f;
+
+            transform.LookAt(endPosition);
+
+            while (travelPercent < 1f)
+            {
+                travelPercent += Time.deltaTime * speed;
+                transform.position = Vector3.Lerp(startPosition, endPosition, travelPercent);
+                yield return new WaitForEndOfFrame();
+            }
+        }
+        FinishPath();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
